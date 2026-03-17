@@ -429,6 +429,92 @@
     .feedback-error p { margin-bottom: 0.8rem; font-size: 0.95rem; }
     .feedback-error strong { color: var(--retro-orange); }
 
+    /* ===== MODE D'EMPLOI ===== */
+    .guide {
+      margin-top: 2rem;
+      border: 2px solid var(--retro-teal);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .guide-toggle {
+      width: 100%;
+      background: var(--retro-ink);
+      color: var(--retro-jaune);
+      border: none;
+      padding: 0.8rem 1.2rem;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      transition: background 0.15s;
+    }
+    .guide-toggle:hover { background: #1a2a2b; }
+    .guide-toggle-arrow {
+      transition: transform 0.25s;
+      font-size: 0.75rem;
+    }
+    .guide-toggle.open .guide-toggle-arrow { transform: rotate(180deg); }
+
+    .guide-body {
+      display: none;
+      background: var(--retro-paper);
+      padding: 1.2rem 1.5rem;
+    }
+    .guide-body.open { display: block; }
+
+    .guide-steps {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .guide-step {
+      display: flex;
+      gap: 0.9rem;
+      align-items: flex-start;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--retro-ink);
+    }
+
+    .guide-step-num {
+      background: var(--retro-teal);
+      color: var(--retro-paper);
+      font-family: 'Oswald', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .guide-step strong { color: var(--retro-teal); }
+
+    .guide-tip {
+      margin-top: 1rem;
+      padding: 0.7rem 1rem;
+      background: rgba(18,118,118,0.08);
+      border-left: 3px solid var(--retro-teal);
+      border-radius: 0 4px 4px 0;
+      font-size: 0.85rem;
+      color: #444;
+      line-height: 1.5;
+    }
+
     /* ===== FOOTER ===== */
     footer {
       text-align: center;
@@ -625,6 +711,41 @@
 
     <!-- Accessible live region -->
     <div class="sr-only" aria-live="polite" id="live-announce"></div>
+
+    <!-- Mode d'emploi -->
+    <div class="guide">
+      <button class="guide-toggle" id="guide-toggle" aria-expanded="false" aria-controls="guide-body">
+        <span>📖 Mode d'emploi</span>
+        <span class="guide-toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="guide-body" id="guide-body" role="region" aria-labelledby="guide-toggle">
+        <ol class="guide-steps">
+          <li class="guide-step">
+            <span class="guide-step-num">1</span>
+            <span>Clique sur <strong>TIRER LE COMBO</strong> — les 3 rouleaux tournent et s'arrêtent sur une discipline, une situation d'apprentissage et une contrainte aléatoires.</span>
+          </li>
+          <li class="guide-step">
+            <span class="guide-step-num">2</span>
+            <span>Lis le combo obtenu. Tu peux <strong>retirer</strong> autant de fois que tu veux pour trouver une situation qui t'intéresse ou que tu veux explorer.</span>
+          </li>
+          <li class="guide-step">
+            <span class="guide-step-num">3</span>
+            <span>Clique sur <strong>✨ RÉVÉLER LA SOLUTION</strong> — l'IA génère une idée pédagogique concrète adaptée à ton contexte, avec les outils Microsoft 365 ou d'autres apps pertinentes.</span>
+          </li>
+          <li class="guide-step">
+            <span class="guide-step-num">4</span>
+            <span>La réponse est structurée en <strong>3 blocs</strong> : 💡 l'idée principale · 🔧 les étapes pratiques en classe · 🚀 le niveau SAMR atteint.</span>
+          </li>
+          <li class="guide-step">
+            <span class="guide-step-num">5</span>
+            <span>Clique sur <strong>↩ REJOUER</strong> pour repartir sur un nouveau tirage.</span>
+          </li>
+        </ol>
+        <p class="guide-tip">
+          💬 <strong>À utiliser en réunion d'équipe :</strong> tire un combo à l'écran, laisse les collègues réagir avant de révéler la solution IA — la discussion est souvent aussi riche que la réponse !
+        </p>
+      </div>
+    </div>
 
     <footer>
       CRBTP — Virage numérique 1:1 | Un outil d'Antonin Bareau
@@ -949,6 +1070,15 @@
       initReels();
       liveAnnounce.textContent = '';
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ===== MODE D'EMPLOI =====
+    const guideToggle = $('guide-toggle');
+    const guideBody   = $('guide-body');
+    guideToggle.addEventListener('click', () => {
+      const isOpen = guideBody.classList.toggle('open');
+      guideToggle.classList.toggle('open', isOpen);
+      guideToggle.setAttribute('aria-expanded', isOpen);
     });
 
     // ===== START =====

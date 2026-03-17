@@ -13,9 +13,15 @@ export default async function handler(req, res) {
 Un enseignant vient de tirer un combo au hasard : ${discipline} + ${situation} + ${contrainte}.
 Réponds en français, de façon concrète et bienveillante.
 
+Contexte technique de l'établissement :
+- Chaque élève dispose d'un PC portable Windows (déploiement 1:1)
+- L'environnement principal est Microsoft 365 (Teams, Word, Excel, PowerPoint, OneNote, Forms, Stream)
+- D'autres outils sont autorisés et bienvenus si pertinents (ex : Wooclap, Canva, PhET, Quizlet, etc.)
+- Privilégie les outils Microsoft quand ils répondent bien au besoin, sans les imposer si un autre outil est clairement meilleur
+
 Ta réponse doit contenir exactement 3 blocs séparés par ### :
 ### 💡 L'IDÉE
-Une seule idée pédagogique concrète (3-4 phrases max) qui utilise le 1:1 (chaque élève a un ordinateur/tablette) pour répondre au combo. Cite un outil ou app spécifique si possible.
+Une seule idée pédagogique concrète (3-4 phrases max) qui utilise le 1:1 pour répondre au combo. Cite un outil ou app spécifique (avec son nom exact).
 
 ### 🔧 EN PRATIQUE
 2-3 étapes très courtes pour mettre l'idée en œuvre en classe.

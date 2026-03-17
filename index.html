@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bandit Manchot Pédagogique — CRBTP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== DESIGN SYSTEM — RETROFuturisme v2.0 ===== */
+    :root {
+      --retro-teal:   #127676;
+      --retro-orange: #E4632E;
+      --retro-jaune:  #E3A535;
+      --retro-ink:    #0D1617;
+      --retro-paper:  #F2EFE6;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--retro-ink);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 1rem;
+    }
+
+    /* ===== PAGE FRAME ===== */
+    .page-frame {
+      background: var(--retro-paper);
+      border: 4px solid var(--retro-orange);
+      border-radius: 8px;
+      max-width: 860px;
+      width: 100%;
+      padding: 2.5rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ===== COIN CORNERS — Art Nouveau ===== */
+    .corner-flourish {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      color: var(--retro-teal);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .corner-flourish.tl { top: 0; left: 0; }
+    .corner-flourish.tr { top: 0; right: 0; transform: scaleX(-1); }
+    .corner-flourish.bl { bottom: 0; left: 0; transform: scaleY(-1); }
+    .corner-flourish.br { bottom: 0; right: 0; transform: scale(-1); }
+
+    /* ===== HEADER ===== */
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .banner-img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 0.5rem;
+    }
+
+    .retro-title {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--retro-ink);
+      line-height: 1.1;
+    }
+    .retro-title span { color: var(--retro-orange); }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: var(--retro-teal);
+      margin-top: 0.4rem;
+      font-weight: 500;
+    }
+
+    /* ===== DEMO BADGE ===== */
+    .demo-badge {
+      display: none;
+      background: var(--retro-orange);
+      color: var(--retro-paper);
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      margin: 0.5rem auto 0;
+      width: fit-content;
+    }
+    .demo-badge.visible { display: block; }
+
+    /* ===== MACHINE CONTAINER ===== */
+    .machine-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .machine-body-img {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ===== REELS WRAPPER ===== */
+    .reels-wrapper {
+      display: flex;
+      gap: 1.2rem;
+      justify-content: center;
+      align-items: flex-start;
+      position: relative;
+      z-index: 2;
+    }
+
+    .reel-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .reel-label {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--retro-teal);
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .reel {
+      background: var(--retro-ink);
+      border: 3px solid var(--retro-teal);
+      border-radius: 6px;
+      width: 200px;
+      height: 90px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 0 20px rgba(18, 118, 118, 0.2), 0 4px 16px rgba(0,0,0,0.5);
+    }
+
+    /* Gradient overlay (fade top/bottom) */
+    .reel::before, .reel::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 28px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .reel::before { top: 0; background: linear-gradient(to bottom, var(--retro-ink), transparent); }
+    .reel::after  { bottom: 0; background: linear-gradient(to top, var(--retro-ink), transparent); }
+
+    .reel-inner {
+      display: flex;
+      flex-direction: column;
+      will-change: transform;
+    }
+
+    .reel-item {
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0.5rem 0.8rem;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--retro-jaune);
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .reel-frame-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* ===== SPIN ANIMATION ===== */
+    @media (prefers-reduced-motion: no-preference) {
+      .reel-inner.spinning {
+        animation: reel-spin var(--spin-duration, 1.5s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+    }
+
+    @keyframes reel-spin {
+      0%   { transform: translateY(0); }
+      80%  { transform: translateY(var(--spin-distance, -2400px)); }
+      90%  { transform: translateY(calc(var(--spin-distance, -2400px) + 40px)); }
+      100% { transform: translateY(var(--spin-distance, -2400px)); }
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn-area {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Pill button (TIRER) */
+    .retro-btn-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 50px;
+      border: 3px solid var(--retro-teal);
+      overflow: hidden;
+      cursor: pointer;
+      font-family: 'Oswald', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-size: 1.1rem;
+      transition: transform 0.1s, box-shadow 0.1s;
+      box-shadow: 0 4px 14px rgba(18, 118, 118, 0.35);
+      background: none;
+      padding: 0;
+    }
+    .retro-btn-pill:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(18,118,118,0.45); }
+    .retro-btn-pill:active { transform: translateY(0); }
+    .retro-btn-pill:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .retro-btn-pill-text {
+      background: var(--retro-jaune);
+      color: var(--retro-ink);
+      padding: 0.7rem 1.4rem;
+    }
+    .retro-btn-pill-icon {
+      background: var(--retro-orange);
+      color: var(--retro-paper);
+      padding: 0.7rem 1rem;
+      font-size: 1.2rem;
+    }
+
+    /* Reveal button */
+    .retro-btn-reveal {
+      display: none;
+      background: var(--retro-teal);
+      color: var(--retro-paper);
+      border: 3px solid var(--retro-ink);
+      border-radius: 50px;
+      padding: 0.7rem 2rem;
+      font-family: 'Oswald', sans-serif;
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      box-shadow: 0 4px 14px rgba(18,118,118,0.4);
+    }
+    .retro-btn-reveal.visible { display: inline-flex; align-items: center; gap: 0.5rem; }
+    .retro-btn-reveal:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(18,118,118,0.5); }
+    .retro-btn-reveal:active { transform: translateY(0); }
+    .retro-btn-reveal:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Replay button */
+    .retro-btn-replay {
+      display: none;
+      background: var(--retro-ink);
+      color: var(--retro-jaune);
+      border: 3px solid var(--retro-jaune);
+      border-radius: 50px;
+      padding: 0.55rem 1.6rem;
+      font-family: 'Oswald', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.15s;
+    }
+    .retro-btn-replay.visible { display: inline-block; }
+    .retro-btn-replay:hover { background: var(--retro-jaune); color: var(--retro-ink); transform: translateY(-2px); }
+
+    /* ===== COMBO DISPLAY ===== */
+    .combo-display {
+      display: none;
+      text-align: center;
+      background: var(--retro-ink);
+      border: 2px solid var(--retro-teal);
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      position: relative;
+      z-index: 2;
+    }
+    .combo-display.visible { display: block; }
+
+    .combo-display p {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--retro-teal);
+      margin-bottom: 0.6rem;
+    }
+
+    .combo-values {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .combo-tag {
+      background: var(--retro-paper);
+      color: var(--retro-ink);
+      border-radius: 4px;
+      padding: 0.3rem 0.8rem;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .combo-separator {
+      color: var(--retro-orange);
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    /* ===== SPINNER ===== */
+    .spinner-area {
+      display: none;
+      text-align: center;
+      padding: 1.5rem;
+      position: relative;
+      z-index: 2;
+    }
+    .spinner-area.visible { display: block; }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(18,118,118,0.2);
+      border-top-color: var(--retro-teal);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner-text {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--retro-teal);
+    }
+
+    /* ===== SOLUTION CARD ===== */
+    .solution-card {
+      display: none;
+      background: var(--retro-paper);
+      border: 2px solid var(--retro-teal);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+      animation: fadeInUp 0.4s ease-out;
+    }
+    .solution-card.visible { display: block; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .solution-block {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid rgba(18,118,118,0.2);
+    }
+    .solution-block:last-child { border-bottom: none; }
+
+    .solution-block-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--retro-teal);
+      margin-bottom: 0.6rem;
+    }
+
+    .solution-block-content {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--retro-ink);
+      white-space: pre-wrap;
+    }
+
+    /* ===== ERROR ===== */
+    .feedback-error {
+      display: none;
+      background: #fdf0ec;
+      border: 2px solid var(--retro-orange);
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      color: var(--retro-ink);
+      position: relative;
+      z-index: 2;
+    }
+    .feedback-error.visible { display: block; }
+    .feedback-error p { margin-bottom: 0.8rem; font-size: 0.95rem; }
+    .feedback-error strong { color: var(--retro-orange); }
+
+    /* ===== FOOTER ===== */
+    footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      font-size: 0.8rem;
+      color: var(--retro-teal);
+      letter-spacing: 0.05em;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 22, 23, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+    .modal-overlay.hidden { display: none; }
+
+    .modal-box {
+      background: var(--retro-paper);
+      border: 3px solid var(--retro-orange);
+      border-radius: 8px;
+      padding: 2rem;
+      max-width: 480px;
+      width: 100%;
+      position: relative;
+    }
+
+    .modal-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--retro-ink);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .modal-title .key-icon { color: var(--retro-jaune); font-size: 1.5rem; }
+
+    .modal-info {
+      font-size: 0.875rem;
+      color: #555;
+      margin-bottom: 1.2rem;
+      line-height: 1.6;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 2px solid var(--retro-teal);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-family: monospace;
+      background: var(--retro-ink);
+      color: var(--retro-jaune);
+      margin-bottom: 0.6rem;
+      outline: none;
+      letter-spacing: 0.05em;
+    }
+    .modal-input:focus { border-color: var(--retro-orange); }
+
+    .modal-error {
+      font-size: 0.85rem;
+      color: var(--retro-orange);
+      min-height: 1.2em;
+      margin-bottom: 0.8rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .modal-btn-validate {
+      flex: 1;
+      background: var(--retro-teal);
+      color: var(--retro-paper);
+      border: none;
+      border-radius: 50px;
+      padding: 0.7rem 1.5rem;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .modal-btn-validate:hover { opacity: 0.85; }
+    .modal-btn-validate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .modal-btn-skip {
+      background: none;
+      color: var(--retro-teal);
+      border: 2px solid var(--retro-teal);
+      border-radius: 50px;
+      padding: 0.65rem 1.2rem;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .modal-btn-skip:hover { background: var(--retro-teal); color: var(--retro-paper); }
+
+    .modal-spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+
+    /* ===== ARIA LIVE ===== */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 640px) {
+      .reel { width: 150px; }
+      .reel-item { font-size: 0.85rem; }
+      .page-frame { padding: 1.5rem 1rem; }
+    }
+    @media (max-width: 480px) {
+      .reels-wrapper { gap: 0.6rem; }
+      .reel { width: 110px; }
+      .reel-item { font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== MODAL CLÉ API ===== -->
+  <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <h2 class="modal-title" id="modal-title">
+        <span class="key-icon" aria-hidden="true">🔑</span>
+        Clé API Anthropic
+      </h2>
+      <p class="modal-info">
+        Ta clé API Anthropic est utilisée <strong>uniquement dans ton navigateur</strong>.
+        Elle n'est pas transmise à un serveur externe — elle appelle directement l'API Anthropic depuis ta page.
+      </p>
+      <input
+        type="password"
+        id="api-key-input"
+        class="modal-input"
+        placeholder="sk-ant-..."
+        aria-label="Clé API Anthropic"
+        autocomplete="off"
+      >
+      <p class="modal-error" id="modal-error" role="alert" aria-live="assertive"></p>
+      <div class="modal-actions">
+        <button class="modal-btn-validate" id="btn-validate-key" aria-label="Valider la clé API">
+          VALIDER
+        </button>
+        <button class="modal-btn-skip" id="btn-skip-key" aria-label="Utiliser le mode démo sans clé API">
+          Mode démo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE FRAME ===== -->
+  <div class="page-frame" role="main">
+
+    <!-- Art Nouveau corners -->
+    <svg class="corner-flourish tl" viewBox="0 0 80 80" fill="currentColor" aria-hidden="true">
+      <path d="M0,0 Q20,0 20,20 Q20,8 8,8 Q0,8 0,0Z" opacity="0.6"/>
+      <path d="M0,0 Q0,40 20,40 Q10,40 10,30 Q10,10 0,0Z" opacity="0.4"/>
+      <circle cx="22" cy="22" r="4" opacity="0.7"/>
+      <path d="M0,15 Q8,15 8,25 Q8,18 2,18Z" opacity="0.5"/>
+      <path d="M15,0 Q15,8 25,8 Q18,8 18,2Z" opacity="0.5"/>
+      <circle cx="6" cy="35" r="2.5" opacity="0.5"/>
+      <circle cx="35" cy="6" r="2.5" opacity="0.5"/>
+      <path d="M0,50 Q5,45 10,50 Q5,55 0,50Z" opacity="0.3"/>
+      <path d="M50,0 Q45,5 50,10 Q55,5 50,0Z" opacity="0.3"/>
+    </svg>
+    <svg class="corner-flourish tr" viewBox="0 0 80 80" fill="currentColor" aria-hidden="true">
+      <path d="M0,0 Q20,0 20,20 Q20,8 8,8 Q0,8 0,0Z" opacity="0.6"/>
+      <path d="M0,0 Q0,40 20,40 Q10,40 10,30 Q10,10 0,0Z" opacity="0.4"/>
+      <circle cx="22" cy="22" r="4" opacity="0.7"/>
+      <path d="M0,15 Q8,15 8,25 Q8,18 2,18Z" opacity="0.5"/>
+      <path d="M15,0 Q15,8 25,8 Q18,8 18,2Z" opacity="0.5"/>
+      <circle cx="6" cy="35" r="2.5" opacity="0.5"/>
+      <circle cx="35" cy="6" r="2.5" opacity="0.5"/>
+    </svg>
+    <svg class="corner-flourish bl" viewBox="0 0 80 80" fill="currentColor" aria-hidden="true">
+      <path d="M0,0 Q20,0 20,20 Q20,8 8,8 Q0,8 0,0Z" opacity="0.6"/>
+      <path d="M0,0 Q0,40 20,40 Q10,40 10,30 Q10,10 0,0Z" opacity="0.4"/>
+      <circle cx="22" cy="22" r="4" opacity="0.7"/>
+      <path d="M0,15 Q8,15 8,25 Q8,18 2,18Z" opacity="0.5"/>
+      <path d="M15,0 Q15,8 25,8 Q18,8 18,2Z" opacity="0.5"/>
+    </svg>
+    <svg class="corner-flourish br" viewBox="0 0 80 80" fill="currentColor" aria-hidden="true">
+      <path d="M0,0 Q20,0 20,20 Q20,8 8,8 Q0,8 0,0Z" opacity="0.6"/>
+      <path d="M0,0 Q0,40 20,40 Q10,40 10,30 Q10,10 0,0Z" opacity="0.4"/>
+      <circle cx="22" cy="22" r="4" opacity="0.7"/>
+      <path d="M0,15 Q8,15 8,25 Q8,18 2,18Z" opacity="0.5"/>
+      <path d="M15,0 Q15,8 25,8 Q18,8 18,2Z" opacity="0.5"/>
+    </svg>
+
+    <!-- Header -->
+    <header>
+      <img
+        src="assets/banner-top.png"
+        alt='Enseigne lumineuse "BANDIT MANCHOT PÉDAGOGIQUE"'
+        class="banner-img"
+        onerror="this.style.display='none'"
+      >
+      <h1 class="retro-title">Bandit <span>Manchot</span> Pédagogique</h1>
+      <p class="subtitle">Découvre comment le 1:1 transforme ta pratique</p>
+      <div class="demo-badge" id="demo-badge" role="status">
+        MODE DÉMO — Saisis une clé API pour des réponses personnalisées
+      </div>
+    </header>
+
+    <!-- Machine -->
+    <section class="machine-container" aria-label="Machine à sous pédagogique">
+
+      <img
+        src="assets/machine-body.png"
+        alt="Corps de la machine à sous rétro-futuriste"
+        class="machine-body-img"
+        onerror="this.style.display='none'"
+      >
+
+      <!-- Rouleaux -->
+      <div class="reels-wrapper">
+
+        <div class="reel-col">
+          <span class="reel-label">Discipline</span>
+          <div class="reel" id="reel-discipline" aria-label="Rouleau Discipline">
+            <div class="reel-inner" id="reel-inner-discipline"></div>
+            <img src="assets/reel-frame.png" alt="" class="reel-frame-img" onerror="this.style.display='none'">
+          </div>
+        </div>
+
+        <div class="reel-col">
+          <span class="reel-label">Situation</span>
+          <div class="reel" id="reel-situation" aria-label="Rouleau Situation d'apprentissage">
+            <div class="reel-inner" id="reel-inner-situation"></div>
+            <img src="assets/reel-frame.png" alt="" class="reel-frame-img" onerror="this.style.display='none'">
+          </div>
+        </div>
+
+        <div class="reel-col">
+          <span class="reel-label">Contrainte</span>
+          <div class="reel" id="reel-contrainte" aria-label="Rouleau Contrainte">
+            <div class="reel-inner" id="reel-inner-contrainte"></div>
+            <img src="assets/reel-frame.png" alt="" class="reel-frame-img" onerror="this.style.display='none'">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Boutons -->
+      <div class="btn-area">
+        <button
+          class="retro-btn-pill"
+          id="btn-spin"
+          aria-label="Tirer un combo aléatoire"
+        >
+          <span class="retro-btn-pill-text">TIRER LE COMBO</span>
+          <span class="retro-btn-pill-icon" aria-hidden="true">▶▶</span>
+        </button>
+        <button
+          class="retro-btn-reveal"
+          id="btn-reveal"
+          aria-label="Révéler la solution pédagogique pour ce combo"
+        >
+          ✨ RÉVÉLER LA SOLUTION
+        </button>
+        <button
+          class="retro-btn-replay"
+          id="btn-replay"
+          aria-label="Rejouer — tirer un nouveau combo"
+        >
+          ↩ REJOUER
+        </button>
+      </div>
+
+      <!-- Combo display -->
+      <div class="combo-display" id="combo-display" aria-live="polite" aria-atomic="true">
+        <p>Combo tiré</p>
+        <div class="combo-values">
+          <span class="combo-tag" id="combo-discipline"></span>
+          <span class="combo-separator" aria-hidden="true">+</span>
+          <span class="combo-tag" id="combo-situation"></span>
+          <span class="combo-separator" aria-hidden="true">+</span>
+          <span class="combo-tag" id="combo-contrainte"></span>
+        </div>
+      </div>
+
+      <!-- Spinner chargement -->
+      <div class="spinner-area" id="spinner-area" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <p class="spinner-text">L'algorithme pédagogique calcule…</p>
+      </div>
+
+      <!-- Erreur -->
+      <div class="feedback-error" id="feedback-error" role="alert">
+        <p><strong>Erreur API</strong> — <span id="error-message"></span></p>
+        <button class="retro-btn-reveal visible" id="btn-retry" aria-label="Réessayer l'appel API">
+          ↩ RÉESSAYER
+        </button>
+      </div>
+
+      <!-- Solution card -->
+      <div class="solution-card" id="solution-card" aria-live="polite" aria-atomic="true">
+        <div class="solution-block" id="block-idee">
+          <p class="solution-block-title">💡 L'idée</p>
+          <p class="solution-block-content" id="content-idee"></p>
+        </div>
+        <div class="solution-block" id="block-pratique">
+          <p class="solution-block-title">🔧 En pratique</p>
+          <p class="solution-block-content" id="content-pratique"></p>
+        </div>
+        <div class="solution-block" id="block-samr">
+          <p class="solution-block-title">🚀 Niveau SAMR</p>
+          <p class="solution-block-content" id="content-samr"></p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Accessible live region -->
+    <div class="sr-only" aria-live="polite" id="live-announce"></div>
+
+    <footer>
+      CRBTP — Virage numérique 1:1 | Un outil d'Antonin Bareau
+    </footer>
+
+  </div><!-- /page-frame -->
+
+  <script>
+    // ===== DONNÉES =====
+    const DISCIPLINES = [
+      "Hôtellerie restauration",
+      "Comptabilité",
+      "Collaborateur administratif",
+      "Travaux de bureau",
+      "Aide-soignant·e",
+      "Électricité",
+      "Menuiserie",
+      "Cuisine",
+      "Plomberie",
+      "Informatique",
+      "Vente & commerce",
+      "Soudure",
+      "Maçonnerie",
+      "Coiffure",
+      "Logistique"
+    ];
+
+    const SITUATIONS = [
+      "Évaluation formative",
+      "Révision avant exam",
+      "Travail en équipe",
+      "Différenciation pour élève en difficulté",
+      "Présentation orale",
+      "Apprentissage d'un geste technique",
+      "Recherche documentaire",
+      "Prise de notes de cours",
+      "Débat / échange d'arguments",
+      "Projet autonome longue durée",
+      "Remédiation individuelle",
+      "Découverte d'un concept nouveau"
+    ];
+
+    const CONTRAINTES = [
+      "Pas de WiFi",
+      "Temps limité (5 minutes)",
+      "Élève absent en stage",
+      "Groupe très hétérogène",
+      "Élève avec DASA",
+      "Local atelier (pas de tables)",
+      "Batterie faible",
+      "Élève primo-arrivant (peu de français)",
+      "Fin de journée, attention basse",
+      "Deux classes fusionnées"
+    ];
+
+    // ===== EXEMPLES DÉMO =====
+    const DEMO_EXAMPLES = [
+      {
+        discipline: "Menuiserie",
+        situation: "Apprentissage d'un geste technique",
+        contrainte: "Local atelier (pas de tables)",
+        response: {
+          idee: "Filmer en vidéo courte (30s) le geste technique à maîtriser, puis laisser chaque élève rejouer la vidéo à son propre rythme sur sa tablette, debout à côté de son établi. L'app Clips (iOS) ou la caméra Android permettent d'enregistrer facilement sa propre exécution pour auto-évaluation.",
+          pratique: "1. L'enseignant filme une démonstration modèle et partage le lien QR Code.\n2. Chaque élève scanne, regarde autant de fois que nécessaire, puis s'enregistre.\n3. Comparaison en binôme : on commente le geste de l'autre.",
+          samr: "**Modification** — La vidéo personnalisée transforme l'observation passive en analyse active et permet une remédiation immédiate que le cours magistral ne rendait pas possible."
+        }
+      },
+      {
+        discipline: "Aide-soignant·e",
+        situation: "Évaluation formative",
+        contrainte: "Groupe très hétérogène",
+        response: {
+          idee: "Utiliser Wooclap ou Kahoot en mode individuel pour proposer des questions à difficulté adaptative : chaque élève reçoit sur son écran la question correspondant à son niveau, sans que le groupe ne perçoive les différences. L'enseignant visualise en temps réel qui bute sur quoi.",
+          pratique: "1. Préparer 3 niveaux de questions (basique / intermédiaire / expert) dans Wooclap.\n2. Lancer le quiz — chaque tablette reçoit les questions automatiquement.\n3. Analyser le tableau de bord en direct et regrouper les élèves par besoin.",
+          samr: "**Redéfinition** — La différenciation en temps réel invisible pour l'élève était impossible en classe traditionnelle ; le 1:1 crée une nouvelle dynamique d'évaluation personnalisée."
+        }
+      },
+      {
+        discipline: "Comptabilité",
+        situation: "Révision avant exam",
+        contrainte: "Pas de WiFi",
+        response: {
+          idee: "Créer des fiches de révision interactives avec Anki (application hors ligne) ou des quiz offline via l'export HTML de Wooclap téléchargé avant le cours. Chaque élève révise à son rythme, le logiciel adapte la fréquence de répétition selon les erreurs.",
+          pratique: "1. Télécharger le deck Anki ou le quiz offline en amont (salle avec WiFi).\n2. En classe atelier : 20 min de révision autonome hors ligne.\n3. Correction collective sur le vidéoprojecteur avec les résultats agrégés.",
+          samr: "**Augmentation** — Le mode hors ligne permet la répétition espacée algorithmique, plus efficace qu'une relecture de notes, même sans connexion."
+        }
+      },
+      {
+        discipline: "Cuisine",
+        situation: "Travail en équipe",
+        contrainte: "Temps limité (5 minutes)",
+        response: {
+          idee: "Chaque équipe utilise un doc partagé (Google Docs offline ou Notion) pour noter sa mise en place en 5 min chrono. Un élève tape, les autres dictent — c'est aussi un exercice de communication professionnelle. Le chrono visible à l'écran renforce l'urgence réaliste du service.",
+          pratique: "1. Ouvrir un doc partagé par équipe avec le template 'Mise en place'.\n2. Lancer le timer à l'écran (site timer.guru ou appli horloge).\n3. Comparer les docs de chaque équipe en 2 min de débrief.",
+          samr: "**Modification** — La co-écriture simultanée visible et la pression du chrono numérique simulent les conditions réelles du service, impossible avec une simple fiche papier."
+        }
+      },
+      {
+        discipline: "Collaborateur administratif",
+        situation: "Présentation orale",
+        contrainte: "Élève avec DASA",
+        response: {
+          idee: "L'élève avec DASA prépare sa présentation avec l'outil Canva (mode présentateur avec notes visibles uniquement sur son écran) et peut utiliser des cartes mentales comme support visuel. Les notes de l'orateur remplacent avantageusement le texte linéaire difficile à lire sous stress.",
+          pratique: "1. Créer la présentation Canva avec notes détaillées dans le mode présentateur.\n2. Répétition individuelle à la maison : l'élève s'enregistre en vidéo.\n3. Présentation en classe avec son propre support personnalisé.",
+          samr: "**Redéfinition** — Le mode présentateur numérique et l'auto-entraînement vidéo permettent à l'élève avec DASA de préparer et de performer à un niveau inaccessible avec supports papier traditionnels."
+        }
+      },
+      {
+        discipline: "Électricité",
+        situation: "Découverte d'un concept nouveau",
+        contrainte: "Fin de journée, attention basse",
+        response: {
+          idee: "Utiliser une simulation interactive (PhET Colorado, gratuite et offline) pour que chaque élève manipule un circuit virtuel en fin de journée. L'interactivité tactile et visuelle relance l'attention mieux qu'un exposé. Le concept de résistance/tension devient tangible sans risque matériel.",
+          pratique: "1. Télécharger la simulation 'Circuit Construction Kit' (PhET) sur chaque tablette.\n2. Défi de 10 min : 'Fais allumer 3 ampoules en série et en parallèle'.\n3. Photo du circuit réalisé → comparaison et discussion en groupe.",
+          samr: "**Modification** — La simulation permet l'expérimentation sans matériel, avec des retours visuels instantanés impossibles sur tableau blanc, particulièrement engageants en fin de journée."
+        }
+      }
+    ];
+
+    // ===== ÉTAT =====
+    let state = {
+      isDemo: false,
+      isSpinning: false,
+      currentCombo: null,
+      apiKey: null
+    };
+
+    // ===== DOM =====
+    const $ = id => document.getElementById(id);
+    const modalOverlay   = $('modal-overlay');
+    const apiKeyInput    = $('api-key-input');
+    const btnValidateKey = $('btn-validate-key');
+    const btnSkipKey     = $('btn-skip-key');
+    const modalError     = $('modal-error');
+    const demoBadge      = $('demo-badge');
+    const btnSpin        = $('btn-spin');
+    const btnReveal      = $('btn-reveal');
+    const btnReplay      = $('btn-replay');
+    const btnRetry       = $('btn-retry');
+    const comboDisplay   = $('combo-display');
+    const spinnerArea    = $('spinner-area');
+    const feedbackError  = $('feedback-error');
+    const solutionCard   = $('solution-card');
+    const liveAnnounce   = $('live-announce');
+
+    // ===== INIT =====
+    function init() {
+      const savedKey = sessionStorage.getItem('api_key');
+      if (savedKey) {
+        state.apiKey = savedKey;
+        state.isDemo = false;
+        closeModal();
+      } else {
+        modalOverlay.classList.remove('hidden');
+        apiKeyInput.focus();
+      }
+      initReels();
+    }
+
+    // ===== MODAL =====
+    function closeModal() {
+      modalOverlay.classList.add('hidden');
+    }
+
+    btnSkipKey.addEventListener('click', () => {
+      state.isDemo = true;
+      state.apiKey = null;
+      demoBadge.classList.add('visible');
+      closeModal();
+    });
+
+    btnValidateKey.addEventListener('click', validateKey);
+    apiKeyInput.addEventListener('keydown', e => { if (e.key === 'Enter') validateKey(); });
+
+    async function validateKey() {
+      const key = apiKeyInput.value.trim();
+      if (!key) { modalError.textContent = 'Merci de saisir ta clé API.'; return; }
+      if (!key.startsWith('sk-ant-')) { modalError.textContent = 'Format invalide — la clé doit commencer par sk-ant-'; return; }
+
+      modalError.textContent = '';
+      btnValidateKey.disabled = true;
+      btnValidateKey.innerHTML = '<span class="modal-spinner"></span>Vérification…';
+
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': key,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 10,
+            messages: [{ role: 'user', content: 'ping' }]
+          })
+        });
+        if (res.status === 401) throw new Error('Clé API invalide ou expirée.');
+        if (!res.ok && res.status !== 200) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err?.error?.message || `Erreur HTTP ${res.status}`);
+        }
+        sessionStorage.setItem('api_key', key);
+        state.apiKey = key;
+        state.isDemo = false;
+        closeModal();
+      } catch (err) {
+        modalError.textContent = err.message;
+      } finally {
+        btnValidateKey.disabled = false;
+        btnValidateKey.textContent = 'VALIDER';
+      }
+    }
+
+    // ===== ROULEAUX =====
+    function initReels() {
+      fillReel('reel-inner-discipline', DISCIPLINES, DISCIPLINES[0]);
+      fillReel('reel-inner-situation', SITUATIONS, SITUATIONS[0]);
+      fillReel('reel-inner-contrainte', CONTRAINTES, CONTRAINTES[0]);
+    }
+
+    function fillReel(innerId, items, displayValue) {
+      const inner = $(innerId);
+      inner.innerHTML = '';
+      // Build list: random items for scroll effect + final value at end
+      const pool = [];
+      const loops = 30;
+      for (let i = 0; i < loops; i++) {
+        pool.push(items[Math.floor(Math.random() * items.length)]);
+      }
+      pool.push(displayValue);
+      pool.forEach(text => {
+        const div = document.createElement('div');
+        div.className = 'reel-item';
+        div.textContent = text;
+        inner.appendChild(div);
+      });
+    }
+
+    function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    async function spinReel(innerId, items, delay, duration) {
+      return new Promise(resolve => {
+        const target = rand(items);
+        fillReel(innerId, items, target);
+        const inner = $(innerId);
+
+        setTimeout(() => {
+          // Reduce motion: skip animation
+          const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (prefersReduced) {
+            resolve(target);
+            return;
+          }
+          // Calculate distance
+          const totalItems = inner.children.length;
+          const distance = (totalItems - 1) * 90; // each item is 90px
+          inner.style.setProperty('--spin-distance', `-${distance}px`);
+          inner.style.setProperty('--spin-duration', `${duration}ms`);
+          inner.classList.add('spinning');
+          inner.addEventListener('animationend', () => {
+            inner.classList.remove('spinning');
+            inner.style.transform = `translateY(-${distance}px)`;
+            resolve(target);
+          }, { once: true });
+        }, delay);
+      });
+    }
+
+    // ===== SPIN HANDLER =====
+    btnSpin.addEventListener('click', async () => {
+      if (state.isSpinning) return;
+      state.isSpinning = true;
+      btnSpin.disabled = true;
+
+      // Reset UI
+      comboDisplay.classList.remove('visible');
+      btnReveal.classList.remove('visible');
+      btnReplay.classList.remove('visible');
+      solutionCard.classList.remove('visible');
+      feedbackError.classList.remove('visible');
+      spinnerArea.classList.remove('visible');
+
+      // Spin all 3 reels in parallel with staggered stops
+      const [d, s, c] = await Promise.all([
+        spinReel('reel-inner-discipline', DISCIPLINES, 0, 1200),
+        spinReel('reel-inner-situation', SITUATIONS, 300, 1500),
+        spinReel('reel-inner-contrainte', CONTRAINTES, 600, 1800)
+      ]);
+
+      state.currentCombo = { discipline: d, situation: s, contrainte: c };
+
+      // Display combo
+      $('combo-discipline').textContent = d;
+      $('combo-situation').textContent = s;
+      $('combo-contrainte').textContent = c;
+      comboDisplay.classList.add('visible');
+      btnReveal.classList.add('visible');
+
+      liveAnnounce.textContent = `Combo tiré : ${d} + ${s} + ${c}`;
+
+      btnSpin.disabled = false;
+      state.isSpinning = false;
+    });
+
+    // ===== REVEAL HANDLER =====
+    btnReveal.addEventListener('click', fetchSolution);
+    btnRetry.addEventListener('click', fetchSolution);
+
+    async function fetchSolution() {
+      if (!state.currentCombo) return;
+      const { discipline, situation, contrainte } = state.currentCombo;
+
+      btnReveal.disabled = true;
+      feedbackError.classList.remove('visible');
+      solutionCard.classList.remove('visible');
+      spinnerArea.classList.add('visible');
+
+      if (state.isDemo) {
+        await new Promise(r => setTimeout(r, 900)); // simulate load
+        spinnerArea.classList.remove('visible');
+        displayDemoSolution(discipline, situation, contrainte);
+        btnReveal.classList.remove('visible');
+        btnReplay.classList.add('visible');
+        btnReveal.disabled = false;
+        return;
+      }
+
+      const systemPrompt = `Tu es un conseiller pédagogique expert en formation professionnelle à Bruxelles.
+Un enseignant vient de tirer un combo au hasard : ${discipline} + ${situation} + ${contrainte}.
+Réponds en français, de façon concrète et bienveillante.
+
+Ta réponse doit contenir exactement 3 blocs séparés par ### :
+### 💡 L'IDÉE
+Une seule idée pédagogique concrète (3-4 phrases max) qui utilise le 1:1 (chaque élève a un ordinateur/tablette) pour répondre au combo. Cite un outil ou app spécifique si possible.
+
+### 🔧 EN PRATIQUE
+2-3 étapes très courtes pour mettre l'idée en œuvre en classe.
+
+### 🚀 NIVEAU SAMR
+Indique le niveau SAMR atteint (Substitution / Augmentation / Modification / Redéfinition) et justifie en une phrase.
+
+Sois direct. Pas d'introduction, pas de conclusion. Maximum 180 mots au total.`;
+
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': state.apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 400,
+            messages: [{
+              role: 'user',
+              content: `Combo : ${discipline} + ${situation} + ${contrainte}`
+            }],
+            system: systemPrompt
+          })
+        });
+
+        if (res.status === 401) {
+          sessionStorage.removeItem('api_key');
+          state.apiKey = null;
+          state.isDemo = true;
+          demoBadge.classList.add('visible');
+          throw new Error('Clé API invalide. Passage en mode démo.');
+        }
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err?.error?.message || `Erreur HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        const text = data.content?.[0]?.text || '';
+        parseAndDisplay(text);
+        btnReveal.classList.remove('visible');
+        btnReplay.classList.add('visible');
+
+      } catch (err) {
+        spinnerArea.classList.remove('visible');
+        $('error-message').textContent = err.message;
+        feedbackError.classList.add('visible');
+      } finally {
+        spinnerArea.classList.remove('visible');
+        btnReveal.disabled = false;
+      }
+    }
+
+    function parseAndDisplay(text) {
+      // Split on ### markers
+      const blocks = text.split(/###\s*/);
+      let idee = '', pratique = '', samr = '';
+
+      blocks.forEach(block => {
+        const trimmed = block.trim();
+        if (/^💡/.test(trimmed)) {
+          idee = trimmed.replace(/^💡\s*L'IDÉE\s*/i, '').trim();
+        } else if (/^🔧/.test(trimmed)) {
+          pratique = trimmed.replace(/^🔧\s*EN PRATIQUE\s*/i, '').trim();
+        } else if (/^🚀/.test(trimmed)) {
+          samr = trimmed.replace(/^🚀\s*NIVEAU SAMR\s*/i, '').trim();
+        }
+      });
+
+      // Fallback: if parsing fails, split by lines
+      if (!idee && !pratique && !samr) {
+        idee = text;
+      }
+
+      $('content-idee').textContent = idee;
+      $('content-pratique').textContent = pratique;
+      $('content-samr').textContent = samr;
+      solutionCard.classList.add('visible');
+      solutionCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function displayDemoSolution(discipline, situation, contrainte) {
+      // Try to find a matching example, else random
+      let example = DEMO_EXAMPLES.find(
+        e => e.discipline === discipline || e.situation === situation || e.contrainte === contrainte
+      );
+      if (!example) example = DEMO_EXAMPLES[Math.floor(Math.random() * DEMO_EXAMPLES.length)];
+
+      $('content-idee').textContent = example.response.idee;
+      $('content-pratique').textContent = example.response.pratique;
+      $('content-samr').textContent = example.response.samr;
+      solutionCard.classList.add('visible');
+      solutionCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // ===== REPLAY =====
+    btnReplay.addEventListener('click', () => {
+      solutionCard.classList.remove('visible');
+      feedbackError.classList.remove('visible');
+      btnReveal.classList.remove('visible');
+      btnReplay.classList.remove('visible');
+      comboDisplay.classList.remove('visible');
+      state.currentCombo = null;
+      initReels();
+      liveAnnounce.textContent = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ===== START =====
+    init();
+  </script>
+</body>
+</html>
